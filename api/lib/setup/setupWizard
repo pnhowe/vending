@@ -34,6 +34,7 @@ def lookup_permission_list( permission_list ):
 parser = argparse.ArgumentParser( description='Vending Setup Wizard, must be run as root' )
 parser.add_argument( '--superuser-username', help='username for the superuser, default=root', default='root' )
 parser.add_argument( '--superuser-password', help='password to use for the superuser user, if not specified it will be prompted for' )
+parser.add_argument( '--site-domain', help='domain name of the initial site to create, default: site1.test', metavar='DOMAIN', default='site1.test' )
 
 args = parser.parse_args()
 
