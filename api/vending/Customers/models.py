@@ -6,6 +6,8 @@ from cinp.orm_django import DjangoCInP as CInP
 
 cinp = CInP( 'Customers', '0.1' )
 
+# allow negative ballence, alert partent to assign more chores
+# optional pin
 @cinp.model()
 class Customer( models.Model ):
   name = models.CharField( max_length=200 )

@@ -25,6 +25,8 @@ First time setup
   pip3 install cinp
   cd api
   pip3 install -e .
+  cd vending
+  ln -s ../vending.conf.sample settings.py
   ./lib/util/manage.py migrate
   ./lib/setup/setupWizard
 
