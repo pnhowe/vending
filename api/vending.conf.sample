@@ -5,7 +5,7 @@ SECRET_KEY = '@(a3yjcc-d3rtt)q7n(tvdfhe4$%u2(dvkd9^cg26+4wmih7l7'
 DEBUG = False
 
 # set UI_HOSTNAME when the API and UI are on separate hosts
-UI_HOSTNAME = None
+UI_HOSTNAME = '*'
 
 # set to None to disable, or '*CONSOLE*' to output to stdout
 # NOTE: if you are running under apache under systemd, you might want to
@@ -43,6 +43,8 @@ DATABASES = {
         'NAME': os.path.dirname(__file__) + '/../vending.sqlite'
     }
 }
+
+DEFAULT_AUTO_FIELD = 'django.db.models.AutoField'
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.8/topics/i18n/

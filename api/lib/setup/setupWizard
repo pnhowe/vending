@@ -51,6 +51,12 @@ else:
 print( '* Creating superuser("{0}") user...'.format( args.superuser_username ) )
 User.objects.create_superuser( username=args.superuser_username, password=superuser_password, email='{0}@{1}'.format( args.superuser_username, args.site_domain ) )
 
+print( '* Creating Users...' )
+user = User.objects.create_user( username='ui', password='ui', email='ui@ui' )
+user.user_permissions.set( lookup_permission_list( [ 'Products.view_product',
+                                                     'Customers.view_customer'
+                                                   ] ) )
+
 print( '* Creating groups...' )
 
 

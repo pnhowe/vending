@@ -18,7 +18,7 @@ class Customer( models.Model ):
   @cinp.check_auth()
   @staticmethod
   def checkAuth( user, verb, id_list, action=None ):
-    return cinp.basic_auth_check( user, verb, action, Job )
+    return cinp.basic_auth_check( user, verb, action, Customer )
 
   def clean( self, *args, **kwargs ):  # TODO: also need to make sure a Structure is in only one complex
     super().clean( *args, **kwargs )
@@ -27,8 +27,8 @@ class Customer( models.Model ):
     if errors:
       raise ValidationError( errors )
 
-  class Meta:
-    default_permissions = ()
+  # class Meta:
+  #   default_permissions = ()
 
   def __str__( self ):
     return 'Customer "{0}"'.format( self.name )

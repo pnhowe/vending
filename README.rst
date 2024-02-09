@@ -23,21 +23,21 @@ First time setup
 ::
 
   pip3 install cinp
+  apt install python3-dateutil
   cd api
   pip3 install -e .
   cd vending
   ln -s ../vending.conf.sample settings.py
-  ./lib/util/manage.py migrate
-  ./lib/setup/setupWizard
+  cd ..
+  cd ..
+  make reset-database
 
 Rebuild database
 ~~~~~~~~~~~~~~~~
 
 ::
 
-  rm vending.sqlite
-  ./lib/util/manage.py migrate
-  ./lib/setup/setupWizard
+  make reset-database
 
 
 Starting the API server
@@ -45,7 +45,7 @@ Starting the API server
 
 ::
 
-  ./lib/api_server/api_server.py
+  make start-api
 
 
 Build db migrations
@@ -54,3 +54,4 @@ Build db migrations
 ::
 
   ./lib/util/manage.py makemigrations
+  ./lib/util/manage.py migrate

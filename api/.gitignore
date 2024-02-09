@@ -9,5 +9,5 @@ htmlcov
 .coveragerc
 .cache
 
-vending/plugins
-vending/settings.py
+vending.sqlite
+settings.py
