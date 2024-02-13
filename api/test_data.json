@@ -1,0 +1,50 @@
+[
+    {
+    "model": "Products.product",
+    "pk": 1,
+    "fields": {
+      "name": "Chips",
+      "cost": 100,
+      "location": "A1",
+      "available": 10,
+      "updated": "2024-02-09T04:43:22.914Z",
+      "created": "2024-02-09T04:43:22.914Z"
+    }
+  },
+    {
+    "model": "Products.product",
+    "pk": 2,
+    "fields": {
+      "name": "Ice Cream",
+      "cost": 1,
+      "location": "B1",
+      "available": 2,
+      "updated": "2024-02-09T04:43:22.914Z",
+      "created": "2024-02-09T04:43:22.914Z"
+    }
+  },
+  {
+    "model": "Products.product",
+    "pk": 3,
+    "fields": {
+      "name": "Gummy Bears",
+      "cost": 2,
+      "location": "C3",
+      "available": 0,
+      "updated": "2024-02-09T04:43:22.914Z",
+      "created": "2024-02-09T04:43:22.914Z"
+    }
+  },
+  {
+    "model": "Products.product",
+    "pk": 4,
+    "fields": {
+      "name": "Gum",
+      "cost": 10,
+      "location": "A2",
+      "available": 20,
+      "updated": "2024-02-09T04:43:22.914Z",
+      "created": "2024-02-09T04:43:22.914Z"
+    }
+  }
+]
