@@ -20,10 +20,11 @@ Setting up api server for development
 First time setup
 ~~~~~~~~~~~~~~~~
 
+
 ::
 
   pip3 install cinp
-  apt install python3-dateutil
+  apt install python3-dateutil python3-django python3-guincorn python3-werkzeug
   cd api
   pip3 install -e .
   cd vending
@@ -35,6 +36,8 @@ First time setup
 Rebuild database
 ~~~~~~~~~~~~~~~~
 
+NOTE: you will need to stop the api server while you do this
+
 ::
 
   make reset-database
@@ -42,6 +45,8 @@ Rebuild database
 
 Starting the API server
 ~~~~~~~~~~~~~~~~~~~~~~~
+
+use ctl-c to shutdown the server
 
 ::
 
@@ -55,3 +60,16 @@ Build db migrations
 
   ./lib/util/manage.py makemigrations
   ./lib/util/manage.py migrate
+
+
+Starting the Nate's UI
+~~~~~~~~~~~~~~~~~~~~~~
+
+use ctl-c to shutdown the server
+
+::
+
+  make start-nate
+
+
+Then goto http://localhost:9000/
