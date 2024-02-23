@@ -21,23 +21,23 @@ function login() {
     } );
 }
 
-
 function doAlert( msg ) {
   alert( msg );
 }
 
-function test() {  
-  const product_list = $("#product_list");
-  product_list.empty();
-  cinp.getFilteredObjects( "/api/v1/Products/Product" ).done(
-    function( resp ) {
-      for ( const [ uri, product ] of Object.entries( resp ) ) {
-        product_list.append( `<div>${product.name}</div>` );
-      }
-    } ).fail( function() {
-      alert( "Unable to get product list" );
-    } );
-}
+// MARKED for deletion
+// function test() {  
+//   const product_list = $("#product_list");
+//   product_list.empty();
+//   cinp.getFilteredObjects( "/api/v1/Products/Product" ).done(
+//     function( resp ) {
+//       for ( const [ uri, product ] of Object.entries( resp ) ) {
+//         product_list.append( `<div>${product.name}</div>` );
+//       }
+//     } ).fail( function() {
+//       alert( "Unable to get product list" );
+//     } );
+// }
 
 function getProductsArr() {
   return new Promise((resolve, reject) => {
@@ -61,19 +61,38 @@ function getProductsArr() {
 }
 
 async function showPrice(button) {
+  const infoSpot = $("#info");
   try {
     let products = await getProductsArr();
     const productLocation = button.textContent;
-    console.log(productLocation + "|" + products.length);
     for (let i = 0; i < products.length; i++) {
-      console.log(products[i][2]);
       if (products[i][2] === productLocation) {
-        alert("The cost is $" + products[i][1]);
+        infoSpot.empty();
+        infoSpot.append(`
+          <div>The price of the ${products[i][0]} is $${products[i][1]} there are ${products[i][3]} available.</div>
+          <button class="button" onclick="buy('${products[i][0]}', ${products[i][1]}, '${products[i][2]}', ${products[i][3]}, ${products[i][4]})">Buy</button>
+        `);
       }
     }
   } catch (error) {
-    alert(error);
+    infoSpot.empty();
+    infoSpot.append(`<div>${error}</div>`);
   }
+}
+
+function buy(product, price, location, available, id) {
+  const infoSpot = $("#info");
+  infoSpot.empty();
+  infoSpot.append(`
+    <div>You have successfully bought the ${product} for a total of $${price}. </br>Please end your transaction to purchase another item.</div>
+    <button class="button" onclick="end()">End</button>
+  `);
+  
+}
+
+function end() {
+  const infoSpot = $("#info");
+  infoSpot.empty();
 }
 
 function showAlert(button) {
@@ -81,4 +100,3 @@ function showAlert(button) {
 }
 
 setupBackend();
-
