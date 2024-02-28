@@ -35,7 +35,7 @@ class ProductGroup( models.Model ):
 class Product( models.Model ):
   name = models.CharField( max_length=200 )
   cost = models.IntegerField( help_text='in howe-bucks' )
-  location = models.CharField( max_length=3 )
+  location = models.CharField( max_length=3, unique=True )
   available = models.IntegerField()
   group = models.ForeignKey( ProductGroup, on_delete=models.PROTECT, default=None )
   updated = models.DateTimeField( editable=False, auto_now=True )
