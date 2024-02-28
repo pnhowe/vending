@@ -7,13 +7,15 @@
     <script src="script.js" defer></script>
   </head>
   <body>
-  <button class="button" onclick="test()">test</button>
     <p class="title">Make a selection</p>
-    <div class="group" id="product_list">The Products</div>
+    <div class="screen">
+      <p>Info</p>
+      <div id="info"></div>
+    </div>
     <div class="group">
       <div class="row">
-        <button class="button" onclick="showAlert(this)">A1</button>
-        <button class="button" onclick="showAlert(this)">A2</button>
+        <button class="button" onclick="showPrice(this)">A1</button>
+        <button class="button" onclick="showPrice(this)">A2</button>
         <button class="button" onclick="showAlert(this)">A3</button>
         <button class="button" onclick="showAlert(this)">A4</button>
         <button class="button" onclick="showAlert(this)">A5</button>
@@ -23,7 +25,7 @@
         <button class="button" onclick="showAlert(this)">A9</button>
       </div>
       <div class="row">
-        <button class="button" onclick="showAlert(this)">B1</button>
+        <button class="button" onclick="showPrice(this)">B1</button>
         <button class="button" onclick="showAlert(this)">B2</button>
         <button class="button" onclick="showAlert(this)">B3</button>
         <button class="button" onclick="showAlert(this)">B4</button>
@@ -36,7 +38,7 @@
       <div class="row">
         <button class="button" onclick="showAlert(this)">C1</button>
         <button class="button" onclick="showAlert(this)">C2</button>
-        <button class="button" onclick="showAlert(this)">C3</button>
+        <button class="button" onclick="showPrice(this)">C3</button>
         <button class="button" onclick="showAlert(this)">C4</button>
         <button class="button" onclick="showAlert(this)">C5</button>
         <button class="button" onclick="showAlert(this)">C6</button>
