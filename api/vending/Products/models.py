@@ -7,15 +7,47 @@ from cinp.orm_django import DjangoCInP as CInP
 cinp = CInP( 'Products', '0.1' )
 
 @cinp.model()
-class Product( models.Model ):
+class ProductGroup( models.Model ):
   name = models.CharField( max_length=200 )
-  cost = models.IntegerField( help_text='in howe-bucks' )
-  location = models.CharField( max_length=3 )
-  available = models.IntegerField()
-  
   updated = models.DateTimeField( editable=False, auto_now=True )
   created = models.DateTimeField( editable=False, auto_now_add=True )
 
+  @cinp.check_auth()
+  @staticmethod
+  def checkAuth( user, verb, id_list, action=None ):
+    return cinp.basic_auth_check( user, verb, action, ProductGroup )
+
+  def clean( self, *args, **kwargs ):  # TODO: also need to make sure a Structure is in only one complex
+    super().clean( *args, **kwargs )
+    errors = {}
+
+    if errors:
+      raise ValidationError( errors )
+
+  # class Meta:
+  #   default_permissions = ()
+
+  def __str__( self ):
+    return 'Product Group "{0}"'.format( self.name )
+
+
+@cinp.model()
+class Product( models.Model ):
+  name = models.CharField( max_length=200 )
+  cost = models.IntegerField( help_text='in howe-bucks' )
+  location = models.CharField( max_length=3, unique=True )
+  available = models.IntegerField()
+  group = models.ForeignKey( ProductGroup, on_delete=models.PROTECT, default=None )
+  updated = models.DateTimeField( editable=False, auto_now=True )
+  created = models.DateTimeField( editable=False, auto_now_add=True )
+
+  @cinp.action()
+  def buy( self ):
+    if self.available < 1:
+      raise ValueError( 'Product is Empty' )
+
+    self.available -= 1
+    self.save()
 
   @cinp.check_auth()
   @staticmethod
@@ -25,7 +57,7 @@ class Product( models.Model ):
   def clean( self, *args, **kwargs ):  # TODO: also need to make sure a Structure is in only one complex
     super().clean( *args, **kwargs )
     errors = {}
-    
+
     if self.cost < 0:
       errors[ 'cost' ] = 'Must be at least 0'
 
