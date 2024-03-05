@@ -41,6 +41,13 @@ class Product( models.Model ):
   updated = models.DateTimeField( editable=False, auto_now=True )
   created = models.DateTimeField( editable=False, auto_now_add=True )
 
+  @cinp.action()
+  def buy( self ):
+    if self.available < 1:
+      raise ValueError( 'Product is Empty' )
+
+    self.available -= 1
+    self.save()
 
   @cinp.check_auth()
   @staticmethod
