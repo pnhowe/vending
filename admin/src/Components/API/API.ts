@@ -1,4 +1,4 @@
-import Vending, { Products_Product } from './Vending'
+import Vending, { Products_Product, Products_ProductGroup } from './Vending'
 import { Cookies } from 'react-cookie'
 
 export default class API
@@ -14,7 +14,7 @@ export default class API
     const username = this.cookies.get( 'username' );
     const token = this.cookies.get( 'token' );
 
-    if( username !== undefined && token !== undefined ) 
+    if( username !== undefined && token !== undefined )
     {
       this.vending.setHeader( 'AUTH-ID', username );
       this.vending.setHeader( 'AUTH-TOKEN', token );
@@ -53,8 +53,13 @@ export default class API
 
     if( info === undefined )
       await this.logout();
-    
+
     return info;
+  }
+
+  async getProductGroups(): Promise<Record<string, Products_ProductGroup>>
+  {
+    return await this.vending.Products_ProductGroup_get_multi( { count: 100 } );
   }
 
   async getProducts(): Promise<Record<string, Products_Product>>

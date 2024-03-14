@@ -1,11 +1,10 @@
 import React from 'react';
-import Box from '@mui/material/Box';
 
-export default function Customers() 
+export default function Customers()
 {
     return (
-      <Box>
+      <div>
         Customers
-      </Box>
+      </div>
     );
 };

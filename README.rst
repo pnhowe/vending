@@ -31,6 +31,8 @@ First time setup
   cd ..
   cd ..
   make reset-database
+  cd admin
+  npm install
 
 Rebuild database
 ~~~~~~~~~~~~~~~~
@@ -50,6 +52,14 @@ use ctl-c to shutdown the server
 ::
 
   make start-api
+
+Starting Admin Site
+~~~~~~~~~~~~~~~~~~~
+First start the API server, then in a seperate terminal
+
+::
+
+  make start-admin
 
 
 Build db migrations

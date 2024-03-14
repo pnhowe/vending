@@ -58,10 +58,10 @@ class Product( models.Model ):
     super().clean( *args, **kwargs )
     errors = {}
 
-    if self.cost < 0:
+    if self.cost is not None and self.cost < 0:
       errors[ 'cost' ] = 'Must be at least 0'
 
-    if self.cost < 0:
+    if self.available is not None and self.available < 0:
       errors[ 'available' ] = 'Must be at least 0'
 
     if errors:
