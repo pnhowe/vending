@@ -1,6 +1,6 @@
 import React from 'react';
 import Box from '@mui/material/Box';
-import { useQuery } from 'react-query';
+import { useQuery, useQueryClient } from 'react-query';
 import Button from '@mui/material/Button';
 import AddIcon from '@mui/icons-material/Add';
 import EditIcon from '@mui/icons-material/Edit';
@@ -18,32 +18,79 @@ import {
   GridRowId,
   GridRowEditStopReasons,
   GridValueGetterParams,
+  GridRowModel,
+  GridValueSetterParams,
 } from '@mui/x-data-grid';
-import { Products_Product } from './API/Vending';
+import { Products_Product, Products_ProductGroup } from './API/Vending';
 import { API, useAPI } from './API';
 import { parseMutationArgs } from 'react-query/types/core/utils';
+import { X } from '@mui/icons-material';
+
+export interface ProductProps
+{
+  groups: Record<number, Products_ProductGroup>;
+}
 
 type GridRowsModel =
 {
-  id: number;
+  id: GridRowId;
   item: Products_Product,
-  _isNew: boolean,
+  group: number;
+  isNew: boolean,
 };
 
 interface EditToolbarProps
 {
-  setRowModesModel: (
-    newModel: (oldModel: GridRowModesModel) => GridRowModesModel,
-  ) => void;
+  handleAddClick: () => void,
 }
 
-export default function Products()
+function EditToolbar( props: EditToolbarProps )
 {
+  const { handleAddClick } = props;
+
+  const handleClick = () => {
+    handleAddClick();
+  }
+
+  return (
+    <GridToolbarContainer>
+      <Button color="primary" startIcon={<AddIcon />} onClick={ handleClick }>
+        Add record
+      </Button>
+    </GridToolbarContainer>
+  );
+}
+
+export default function Products( props: ProductProps )
+{
+  const { groups } = props;
+
   const api = useAPI();
+  const queryClient = useQueryClient();
 
-  const [ rowModesModel, setRowModesModel ] = React.useState<GridRowModesModel>({});
+  const [ rows, setRows ] = React.useState<GridRowsModel[]>( [] );
+  const [ rowModes, setRowModes ] = React.useState<GridRowModesModel>( {} );
 
-  const { isLoading, isError, data } = useQuery<Record<string,Products_Product>, Error>( 'Products_Product', async () => { return await api.getProducts() } );
+  const { isLoading, isError, isSuccess, data } = useQuery<Record<string,Products_Product>, Error>( 'Products_Product', async () => { return await api.getProducts() } );
+
+  React.useEffect( () => {
+    let rows: GridRowsModel[] = [];
+    const rowModes: GridRowModesModel = {};
+    if( !isSuccess )
+    {
+      return;
+    }
+
+    for( let k in data )
+    {
+      const item = data[k];
+      rows = [ ...rows, { id: item.id, item: item, group: item.group ? item.group.id : 0, isNew: false } ];
+      rowModes[ data[k].id ] = { mode: GridRowModes.View };
+    }
+
+    setRows( rows );
+    setRowModes( rowModes );
+  }, [ data ] );
 
   if( isLoading || data === undefined )
     return (
@@ -55,69 +102,65 @@ export default function Products()
       <Box>Error....</Box>
     );
 
-  let rows = Object.values( data ).map( ( item: Products_Product ) => { return { id: item.id, item: item, _isNew: false }; } ) ;
 
-  function EditToolbar( props: EditToolbarProps )
-  {
-    const { setRowModesModel } = props;
-
-    const handleClick = () => {
-      const id = 0;
-      const newRow : GridRowsModel = { id: id, item: new Products_Product( api.vending, id ), _isNew: true };
-      rows.push( newRow );
-      setRowModesModel((oldModel) => ({
-        ...oldModel,
-        [id]: { mode: GridRowModes.Edit, fieldToFocus: 'name' },
-      }));
-    };
-
-    return (
-      <GridToolbarContainer>
-        <Button color="primary" startIcon={<AddIcon />} onClick={handleClick}>
-          Add record
-        </Button>
-      </GridToolbarContainer>
-    );
-  }
-
-  const handleRowEditStop: GridEventListener<'rowEditStop'> = (params, event) => {
-    if (params.reason === GridRowEditStopReasons.rowFocusOut) {
+  const handleRowEditStop: GridEventListener<'rowEditStop'> = ( params, event ) => {
+    if ( params.reason === GridRowEditStopReasons.rowFocusOut )
+    {
       event.defaultMuiPrevented = true;
     }
   };
 
-  const handleEditClick = (id: GridRowId) => () => {
-    setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.Edit } });
+  const handleEditClick = ( id: GridRowId ) => () => {
+    setRowModes( { ...rowModes, [id]: { mode: GridRowModes.Edit, fieldToFocus: 'name' } } );
   };
 
-  const handleSaveClick = (id: GridRowId) => () => {
-    setRowModesModel({ ...rowModesModel, [id]: { mode: GridRowModes.View } });
-  };
+  const handleSaveClick = ( id: GridRowId ) => () => {
+    const row = rows.filter( ( row ) => row.item.id === id )[0];
+    var rc;
+    row.item.group = groups[ row.group ];
+    if( row.isNew )
+      rc = row.item._create();
+    else
+      rc = row.item._save();
 
-  const handleDeleteClick = (id: GridRowId) => () => {
-    rows = rows.filter((row) => row.item.id !== id);
-  };
-
-  const handleCancelClick = (id: GridRowId) => () => {
-    setRowModesModel({
-      ...rowModesModel,
-      [id]: { mode: GridRowModes.View, ignoreModifications: true },
+    rc.then( () => {
+      queryClient.invalidateQueries( 'Products_Product' );
+      setRowModes( { ...rowModes, [id]: { mode: GridRowModes.View } } );
+    } ).catch( ( msg ) => {
+      alert( `Error saving: ${msg.msg}: ${JSON.stringify(msg.detail)}` );
     });
+  };
 
-    const editedRow = rows.find((row) => row.item.id === id);
-    if (editedRow!._isNew) {
-      rows = rows.filter( ( row ) => row.item.id !== id );
+  const handleDeleteClick = ( id: GridRowId ) => () => {
+    const row = rows.filter( ( row ) => row.item.id === id )[0];
+    row.item._delete();
+    queryClient.invalidateQueries( 'Products_Product' );
+  };
+
+  const handleCancelClick = ( id: GridRowId ) => () => {
+    setRowModes( { ...rowModes, [id]: { mode: GridRowModes.View, ignoreModifications: true } } );
+
+    const editedRow = rows.find( ( row ) => row.item.id === id );
+    if ( editedRow!.isNew )
+    {
+      setRows( rows.filter( ( row ) => row.item.id !== id ) );
     }
   };
 
-  const processRowUpdate = (newRow: GridRowsModel) => {
-    const updatedRow = { ...newRow, _isNew: false };
-    rows = rows.map((row) => (row.item.id === newRow.item.id ? updatedRow : row));
+  const handleAddClick = () => {
+    const id = 0;
+    setRows( [ ...rows, { id: id, item: new Products_Product( api.vending, id ), group: 1, isNew: true } ] );
+    setRowModes( { ...rowModes, [id]: { mode: GridRowModes.Edit, fieldToFocus: 'name' } } );
+  };
+
+  const processRowUpdate = ( newRow: GridRowsModel ) => {
+    const updatedRow = { ...newRow, isNew: false };
+    setRows( rows.map( ( row ) => ( row.item.id === newRow.item.id ? updatedRow : row ) ) );
     return updatedRow;
   };
 
-  const handleRowModesModelChange = ( newRowModesModel: GridRowModesModel ) => {
-    setRowModesModel( newRowModesModel );
+  const handleRowModesModelChange = ( rowModes: GridRowModesModel ) => {
+    setRowModes( rowModes );
   };
 
   const handleValueGet = ( params: GridValueGetterParams ) => {
@@ -125,13 +168,21 @@ export default function Products()
     return row.item[ field ];
   }
 
+  const handleValueSet = ( params: GridValueSetterParams, field: string ) => {
+    const { row, value } = params;
+    row.item[ field ] = value;
+    return row;
+  }
+
+  const group_names = Object.values( groups ).map( (i) => ( { 'value': i.id, 'label': i.name } ) );
+
   const productColumns: GridColDef[] = [
-    { field: 'id', headerName: 'Id', width: 20, valueGetter: handleValueGet },
-    { field: 'group', headerName: 'Group', width: 70, valueGetter: handleValueGet },
-    { field: 'name', headerName: 'Name', width: 200, valueGetter: handleValueGet },
-    { field: 'cost', headerName: 'Cost', width: 20, type: 'number', valueGetter: handleValueGet },
-    { field: 'location', headerName: 'Location', width: 70, valueGetter: handleValueGet },
-    { field: 'available', headerName: 'Available', width: 70, valueGetter: handleValueGet },
+    { field: 'id', headerName: 'Id', width: 20 },
+    { field: 'group', headerName: 'Group', width: 100, type: 'singleSelect', valueOptions: group_names, editable: true },
+    { field: 'name', headerName: 'Name', width: 200, editable: true, valueGetter: handleValueGet, valueSetter: (parms) => handleValueSet( parms, 'name' ) },
+    { field: 'cost', headerName: 'Cost', width: 100, type: 'number', editable: true, valueGetter: handleValueGet, valueSetter: (parms) => handleValueSet( parms, 'cost' ) },
+    { field: 'location', headerName: 'Location', width: 70, editable: true, valueGetter: handleValueGet, valueSetter: (parms) => handleValueSet( parms, 'location' ) },
+    { field: 'available', headerName: 'Available', width: 100, type: 'number', editable: true, valueGetter: handleValueGet, valueSetter: (parms) => handleValueSet( parms, 'available' ) },
     {
       field: 'actions',
       type: 'actions',
@@ -139,7 +190,7 @@ export default function Products()
       width: 100,
       cellClassName: 'actions',
       getActions: ({ id }) => {
-         const isInEditMode = rowModesModel[id]?.mode === GridRowModes.Edit;
+         const isInEditMode = rowModes[id]?.mode === GridRowModes.Edit;
         if (isInEditMode) {
           return [
             <GridActionsCellItem
@@ -180,22 +231,23 @@ export default function Products()
   ];
 
   return (
-    <Box>
+    <div>
       <DataGrid
         rows={ rows }
         columns={ productColumns }
         editMode="row"
-        rowModesModel={ rowModesModel }
+        rowModesModel={ rowModes }
         onRowModesModelChange={ handleRowModesModelChange }
         onRowEditStop={ handleRowEditStop }
         processRowUpdate={ processRowUpdate }
+        rowSelection={ false }
         slots={{
           toolbar: EditToolbar,
         }}
         slotProps={{
-          toolbar: { setRowModesModel },
+          toolbar: { handleAddClick },
         }}
       />
-    </Box>
+    </div>
   );
 }

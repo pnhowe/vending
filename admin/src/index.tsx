@@ -22,9 +22,6 @@ const queryClient = new QueryClient( {
 
 root.render(
   <React.StrictMode>
-    <head>
-      <meta name="viewport" content="initial-scale=1, width=device-width" />
-    </head>
     <QueryClientProvider client={ queryClient } >
       <APIProvider cookies={ cookies } >
         <StyledEngineProvider injectFirst>

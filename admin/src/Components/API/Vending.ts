@@ -101,7 +101,6 @@ export class Vending
     return ( data as string );
   }
 
-
   async Auth_User_call_changePassword( password: string ): Promise<void>
   {
     await this.cinp.callOne( "/api/v1/Auth/User(changePassword)", { "password": password } );
