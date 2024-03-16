@@ -1,8 +1,8 @@
 import tkinter as tk
 import random
 
-global itemString
-global numberTurple
+from api import API
+
 itemString = ''
 numberTurple = ('1','2','3','4','5','6','7','8','9','0')
 
@@ -10,24 +10,24 @@ numberTurple = ('1','2','3','4','5','6','7','8','9','0')
 def makeItem(put):
     global itemString
     global numberTurple
-    
+
     if put in numberTurple and itemString in numberTurple or put not in numberTurple and itemString not in numberTurple:
-        # happens either if both are numbers or letters 
+        # happens either if both are numbers or letters
         itemString = put
-        
+
     elif put in numberTurple and itemString not in numberTurple or put not in numberTurple and itemString in numberTurple:
         # happens if both are different
         if put in numberTurple:
             itemString += put
         elif put not in numberTurple:
             itemString = put + itemString
-        
+
     if len(itemString) == 2:
         print(itemString + ' fell')
         itemString = ''
-    
+
 def summonButtons():
-    
+
     btA = tk.Button(root, text = "A", bd = 2, command = lambda: makeItem('A'))
     btB = tk.Button(root, text = "B", bd = 2, command = lambda: makeItem('B'))
     btC = tk.Button(root, text = "C", bd = 2, command = lambda: makeItem('C'))
@@ -44,8 +44,8 @@ def summonButtons():
     bt8 = tk.Button(root, text = "8", bd = 2, command = lambda: makeItem('8'))
     bt9 = tk.Button(root, text = "9", bd = 2, command = lambda: makeItem('9'))
     bt0 = tk.Button(root, text = "0", bd = 2, command = lambda: makeItem('0'))
-    
-    
+
+
     btA.pack()
     btB.pack()
     btC.pack()
@@ -62,8 +62,8 @@ def summonButtons():
     bt8.pack()
     bt9.pack()
     bt0.pack()
-    
-    
+
+
     btA.place(x=50, y=50)
     btB.place(x=100, y=50)
     btC.place(x=150, y=50)
@@ -80,14 +80,18 @@ def summonButtons():
     bt8.place(x=100, y=200)
     bt9.place(x=150, y=200)
     bt0.place(x=200, y=200)
-    
 
-    
+
+
 def scanSuccess():
-    print("scan successful. Hello So and So, you have $x to spend" )
+    print('scan successful. Hello {0}, you have ${1} to spend'.format( api.getUser(), api.getBalance() ) )
     scanbtn.pack_forget()
     summonButtons()
-    
+
+api = API()
+for product in api.getProducts():
+    print( product )
+
 root = tk.Tk()
 root.geometry('300x300')
 frame = tk.Frame(root)
