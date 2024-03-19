@@ -10,6 +10,7 @@ import { API, useAPI } from './Components/API';
 import { Products_ProductGroup } from './Components/API/Vending';
 import Products, { ProductProps } from './Components/Products';
 import Customers from './Components/Customers';
+import ProductGroups from './Components/ProductGroups';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -17,15 +18,14 @@ interface TabPanelProps {
   value: number;
 }
 
-function CustomTabPanel(props: TabPanelProps) {
+function TabPanel(props: TabPanelProps) {
   const { children, value, index, ...other } = props;
 
   return (
     <div
       role="tabpanel"
       hidden={value !== index}
-      id={`simple-tabpanel-${index}`}
-      aria-labelledby={`simple-tab-${index}`}
+      id={`app-tabpanel-${index}`}
       {...other}
     >
       {value === index && (
@@ -39,18 +39,17 @@ function CustomTabPanel(props: TabPanelProps) {
 
 function a11yProps(index: number) {
   return {
-    id: `simple-tab-${index}`,
-    'aria-controls': `simple-tabpanel-${index}`,
+
   };
 }
 
-function BasicTabs() {
+function AppTabs() {
   const api = useAPI();
 
   const [ value, setValue ] = React.useState(0);
   const [ productGroups, setProductGroups ] = React.useState<Record<number,Products_ProductGroup>>( {} );
 
-  const { isSuccess, data } = useQuery<Record<string,Products_ProductGroup>, Error>( 'Products_ProductGroup', async () => { return await api.getProductGroups() } );
+  const { isSuccess, data } = useQuery<Record<string,Products_ProductGroup>, Error>( 'App_Products_ProductGroups', async () => { return await api.getProductGroups() } );
 
   React.useEffect( () => {
     let groups: Record<number,Products_ProductGroup> = {};
@@ -75,27 +74,31 @@ function BasicTabs() {
     <Box sx={{ width: '100%', height: '100%' }}>
       <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
         <Tabs value={value} onChange={handleChange}>
-          <Tab label="Home" {...a11yProps(0)} />
-          <Tab label="Products" {...a11yProps(1)} />
-          <Tab label="Customers" {...a11yProps(2)} />
+          <Tab label="Home" id="app-tab-0" />
+          <Tab label="Products" id="app-tab-1" />
+          <Tab label="Customers" id="app-tab-2" />
+          <Tab label="Product Groups" id="app-tab-3" />
         </Tabs>
       </Box>
-      <CustomTabPanel value={value} index={0}>
+      <TabPanel value={value} index={0}>
         <Root/>
-      </CustomTabPanel>
-      <CustomTabPanel value={value} index={1}>
+      </TabPanel>
+      <TabPanel value={value} index={1}>
         <Products groups={ productGroups }/>
-      </CustomTabPanel>
-      <CustomTabPanel value={value} index={2}>
+      </TabPanel>
+      <TabPanel value={value} index={2}>
         <Customers/>
-      </CustomTabPanel>
+      </TabPanel>
+      <TabPanel value={value} index={3}>
+        <ProductGroups/>
+      </TabPanel>
     </Box>
   );
 }
 
 function App() {
   return (
-    <BasicTabs/>
+    <AppTabs/>
   );
 }
 

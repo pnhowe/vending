@@ -11,9 +11,15 @@ cinp = CInP( 'Customers', '0.1' )
 @cinp.model()
 class Customer( models.Model ):
   name = models.CharField( max_length=200 )
+  balance = models.IntegerField( editable=False, default=0 )
   updated = models.DateTimeField( editable=False, auto_now=True )
   created = models.DateTimeField( editable=False, auto_now_add=True )
 
+  @cinp.action( paramater_type_list=[ 'Integer' ] )
+  def addFunds( self, amount ):
+    self.balance += amount
+    self.full_clean()
+    self.save()
 
   @cinp.check_auth()
   @staticmethod
@@ -32,4 +38,3 @@ class Customer( models.Model ):
 
   def __str__( self ):
     return 'Customer "{0}"'.format( self.name )
-

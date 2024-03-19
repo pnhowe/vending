@@ -33,6 +33,7 @@ First time setup
   make reset-database
   cd admin
   npm install
+  cd ..
 
 Rebuild database
 ~~~~~~~~~~~~~~~~
