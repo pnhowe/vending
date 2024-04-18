@@ -1,4 +1,4 @@
-import Vending, { Customers_Customer, Products_Product, Products_ProductGroup } from './Vending'
+import Vending, { Customers_Customer, Customers_CustomerGroup, Products_Product, Products_ProductGroup } from './Vending'
 import { Cookies } from 'react-cookie'
 
 export default class API
@@ -57,6 +57,16 @@ export default class API
     return info;
   }
 
+  async getCustomerGroups(): Promise<Record<string, Customers_CustomerGroup>>
+  {
+    return await this.vending.Customers_CustomerGroup_get_multi( { count: 100 } );
+  }
+
+  async getCustomers(): Promise<Record<string, Customers_Customer>>
+  {
+    return await this.vending.Customers_Customer_get_multi( { count: 100 } );
+  }
+
   async getProductGroups(): Promise<Record<string, Products_ProductGroup>>
   {
     return await this.vending.Products_ProductGroup_get_multi( { count: 100 } );
@@ -65,10 +75,5 @@ export default class API
   async getProducts(): Promise<Record<string, Products_Product>>
   {
     return await this.vending.Products_Product_get_multi( { count: 100 } );
-  }
-
-  async getCustomers(): Promise<Record<string, Customers_Customer>>
-  {
-    return await this.vending.Customers_Customer_get_multi( { count: 100 } );
   }
 }

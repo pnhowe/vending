@@ -27,9 +27,13 @@ import {
   GridValueGetterParams,
   GridValueSetterParams,
 } from '@mui/x-data-grid';
-import { Customers_Customer } from './API/Vending';
+import { Customers_Customer, Customers_CustomerGroup } from './API/Vending';
 import { useAPI } from './API';
 
+export interface CustomerProps
+{
+  groups: Record<number, Customers_CustomerGroup>;
+}
 
 type GridRowsModel =
 {
@@ -60,8 +64,10 @@ function EditToolbar( props: EditToolbarProps )
   );
 }
 
-export default function Customers()
+export default function Customers( props: CustomerProps  )
 {
+  const { groups } = props;
+
   const api = useAPI();
   const queryClient = useQueryClient();
 
