@@ -7,10 +7,11 @@ import Box from '@mui/material/Box';
 import Root from './Root';
 import { useQuery } from 'react-query';
 import { API, useAPI } from './Components/API';
-import { Products_ProductGroup } from './Components/API/Vending';
-import Products, { ProductProps } from './Components/Products';
+import { Products_ProductGroup, Customers_CustomerGroup } from './Components/API/Vending';
+import CustomerGroups from './Components/CustomerGroups';
 import Customers from './Components/Customers';
 import ProductGroups from './Components/ProductGroups';
+import Products from './Components/Products';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -47,24 +48,42 @@ function AppTabs() {
   const api = useAPI();
 
   const [ value, setValue ] = React.useState(0);
+  const [ customerGroups, setCustomerGroups ] = React.useState<Record<number,Customers_CustomerGroup>>( {} );
   const [ productGroups, setProductGroups ] = React.useState<Record<number,Products_ProductGroup>>( {} );
 
-  const { isSuccess, data } = useQuery<Record<string,Products_ProductGroup>, Error>( 'App_Products_ProductGroups', async () => { return await api.getProductGroups() } );
+  const { isSuccess: isSuccess_cg, data: data_cg } = useQuery<Record<string,Customers_CustomerGroup>, Error>( 'App_Customers_CustomerGroups', async () => { return await api.getCustomerGroups() } );
 
   React.useEffect( () => {
-    let groups: Record<number,Products_ProductGroup> = {};
-    if( !isSuccess )
+    let groups: Record<number,Customers_CustomerGroup> = {};
+    if( !isSuccess_cg )
     {
       return;
     }
 
-    for( let k in data )
+    for( let k in data_cg )
     {
-      const item = data[k];
+      const item = data_cg[k];
+      groups[item.id] = item;
+      setCustomerGroups( groups );
+    }
+  }, [ isSuccess_cg ] );
+
+  const { isSuccess: isSuccess_pg, data: data_pg } = useQuery<Record<string,Products_ProductGroup>, Error>( 'App_Products_ProductGroups', async () => { return await api.getProductGroups() } );
+
+  React.useEffect( () => {
+    let groups: Record<number,Products_ProductGroup> = {};
+    if( !isSuccess_pg )
+    {
+      return;
+    }
+
+    for( let k in data_pg )
+    {
+      const item = data_pg[k];
       groups[item.id] = item;
       setProductGroups( groups );
     }
-  }, [ isSuccess ] );
+  }, [ isSuccess_pg ] );
 
   const handleChange = (event: React.SyntheticEvent, newValue: number) => {
     setValue(newValue);
@@ -75,22 +94,26 @@ function AppTabs() {
       <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
         <Tabs value={value} onChange={handleChange}>
           <Tab label="Home" id="app-tab-0" />
-          <Tab label="Products" id="app-tab-1" />
-          <Tab label="Customers" id="app-tab-2" />
-          <Tab label="Product Groups" id="app-tab-3" />
+          <Tab label="Product Groups" id="app-tab-1" />
+          <Tab label="Products" id="app-tab-2" />
+          <Tab label="Customer Groups" id="app-tab-3" />
+          <Tab label="Customers" id="app-tab-4" />
         </Tabs>
       </Box>
       <TabPanel value={value} index={0}>
         <Root/>
       </TabPanel>
       <TabPanel value={value} index={1}>
-        <Products groups={ productGroups }/>
+        <ProductGroups/>
       </TabPanel>
       <TabPanel value={value} index={2}>
-        <Customers/>
+        <Products groups={ productGroups }/>
       </TabPanel>
       <TabPanel value={value} index={3}>
-        <ProductGroups/>
+        <CustomerGroups/>
+      </TabPanel>
+      <TabPanel value={value} index={4}>
+        <Customers groups={ customerGroups }/>
       </TabPanel>
     </Box>
   );
