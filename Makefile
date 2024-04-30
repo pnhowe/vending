@@ -6,6 +6,9 @@ start-api:
 start-nate:
 	cd GUI-Nate ; python3 -m http.server 9000
 
+start-admin:
+	cd admin ; npm start
+
 reset-database:
 	rm api/vending.sqlite || true
 	./api/lib/util/manage.py migrate

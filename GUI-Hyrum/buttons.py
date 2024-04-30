@@ -1,8 +1,8 @@
 import tkinter as tk
 import random
 
-global itemString
-global numberTurple
+from api import API
+
 itemString = ''
 numberTurple = ('1','2','3','4','5','6','7','8','9','0')
 
@@ -17,6 +17,8 @@ def makeItem(put):
         itemString = put
 
     elif (put in numberTurple and itemString not in numberTurple) or (put not in numberTurple and itemString in numberTurple):
+
+    
         # happens if both are different
         if put in numberTurple:
             itemString += put
@@ -28,6 +30,7 @@ def makeItem(put):
         itemString = ''
 
 def summonButtons():
+
     buttons = []
     buttonRef = (('A', '50', '50'), ('B', '100', '50'), ('C', '150', '50'), ('D', '200', '50'), ('E', '50', '100'), ('F', '100', '100'), ('1', '150', '100'), ('2', '200', '100'), ('3', '50', '150'), ('4', '100', '150'), ('5', '150', '150'), ('6', '200', '150'), ('7', '50', '200'), ('8', '100', '200'), ('9', '150', '200'), ('0', '200', '200'))
 
@@ -38,10 +41,13 @@ def summonButtons():
         i[0].pack()
         i[0].place(x=i[1], y=i[2])
 
+
 def scanSuccess():
     api.scan()
     customer = api.getCustomer()
+
     print(customer)
+
 
     print('scan successful. Hello {0}, you have ${1} to spend'.format( customer['name'], customer['balance'] ) )
 

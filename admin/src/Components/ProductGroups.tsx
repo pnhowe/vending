@@ -18,22 +18,18 @@ import {
   GridRowId,
   GridRowEditStopReasons,
   GridValueGetterParams,
+  GridRowModel,
   GridValueSetterParams,
 } from '@mui/x-data-grid';
-import { Products_Product, Products_ProductGroup } from './API/Vending';
-import { useAPI } from './API';
-import { error } from 'console';
-
-export interface ProductProps
-{
-  groups: Record<number, Products_ProductGroup>;
-}
+import { Products_ProductGroup } from './API/Vending';
+import { API, useAPI } from './API';
+import { parseMutationArgs } from 'react-query/types/core/utils';
+import { X } from '@mui/icons-material';
 
 type GridRowsModel =
 {
   id: GridRowId;
-  item: Products_Product,
-  groups: string;
+  item: Products_ProductGroup,
   isNew: boolean,
 };
 
@@ -59,17 +55,15 @@ function EditToolbar( props: EditToolbarProps )
   );
 }
 
-export default function Products( props: ProductProps )
+export default function ProductGroups()
 {
-  const { groups } = props;
-
   const api = useAPI();
   const queryClient = useQueryClient();
 
   const [ rows, setRows ] = React.useState<GridRowsModel[]>( [] );
   const [ rowModes, setRowModes ] = React.useState<GridRowModesModel>( {} );
 
-  const { isLoading, isError, isSuccess, data } = useQuery<Record<string,Products_Product>, Error>( 'Products_Product', async () => { return await api.getProducts() } );
+  const { isLoading, isError, isSuccess, data } = useQuery<Record<string,Products_ProductGroup>, Error>( 'Products_ProductGroups', async () => { return await api.getProductGroups() } );
 
   React.useEffect( () => {
     let rows: GridRowsModel[] = [];
@@ -82,38 +76,13 @@ export default function Products( props: ProductProps )
     for( let k in data )
     {
       const item = data[k];
-      rows = [ ...rows, { id: item.id, item: item, groups: (item.groups ? item.groups.map( group => group.id ) : []).join(","), isNew: false } ];
+      rows = [ ...rows, { id: item.id, item: item, isNew: false } ];
       rowModes[ data[k].id ] = { mode: GridRowModes.View };
     }
 
     setRows( rows );
     setRowModes( rowModes );
-  }, [ isSuccess, data ] );
-
-  const processRowUpdate = React.useCallback(
-    async( newRow: GridRowsModel ) => {
-      const updatedRow = { ...newRow, isNew: false };
-      updatedRow.item.groups = updatedRow.groups.split(",").map( id => groups[ Number(id) ] );
-      var rc;
-
-      if( newRow.isNew )
-        rc = newRow.item._create();
-      else
-        rc = newRow.item._save();
-
-      try
-      {
-        await rc;
-        queryClient.invalidateQueries( 'Products_Product' );
-      }
-      catch( msg )
-      {
-        alert( `Error saving: ${JSON.stringify(msg)}` );
-        throw msg;
-      }
-      return updatedRow;
-    }, [],
-  );
+  }, [ data ] );
 
   if( isLoading || data === undefined )
     return (
@@ -124,6 +93,7 @@ export default function Products( props: ProductProps )
     return (
       <Box>Error....</Box>
     );
+
 
   const handleRowEditStop: GridEventListener<'rowEditStop'> = ( params, event ) => {
     if ( params.reason === GridRowEditStopReasons.rowFocusOut )
@@ -137,13 +107,27 @@ export default function Products( props: ProductProps )
   };
 
   const handleSaveClick = ( id: GridRowId ) => () => {
-    setRowModes( { ...rowModes, [id]: { mode: GridRowModes.View } } );
+    const row = rows.filter( ( row ) => row.item.id === id )[0];
+    var rc;
+    if( row.isNew )
+      rc = row.item._create();
+    else
+      rc = row.item._save();
+
+    rc.then( () => {
+      queryClient.invalidateQueries( 'Products_ProductGroups' );
+      queryClient.invalidateQueries( 'App_Products_ProductGroups' );
+      setRowModes( { ...rowModes, [id]: { mode: GridRowModes.View } } );
+    } ).catch( ( msg ) => {
+      alert( `Error saving: ${msg.msg}: ${JSON.stringify(msg.detail)}` );
+    });
   };
 
   const handleDeleteClick = ( id: GridRowId ) => () => {
     const row = rows.filter( ( row ) => row.item.id === id )[0];
     row.item._delete();
-    queryClient.invalidateQueries( 'Products_Product' );
+    queryClient.invalidateQueries( 'Products_ProductGroups' );
+    queryClient.invalidateQueries( 'App_Products_ProductGroups' );
   };
 
   const handleCancelClick = ( id: GridRowId ) => () => {
@@ -158,8 +142,14 @@ export default function Products( props: ProductProps )
 
   const handleAddClick = () => {
     const id = 0;
-    setRows( [ ...rows, { id: id, item: new Products_Product( api.vending, id ), groups: "", isNew: true } ] );
+    setRows( [ ...rows, { id: id, item: new Products_ProductGroup( api.vending, id ), isNew: true } ] );
     setRowModes( { ...rowModes, [id]: { mode: GridRowModes.Edit, fieldToFocus: 'name' } } );
+  };
+
+  const processRowUpdate = ( newRow: GridRowsModel ) => {
+    const updatedRow = { ...newRow, isNew: false };
+    setRows( rows.map( ( row ) => ( row.item.id === newRow.item.id ? updatedRow : row ) ) );
+    return updatedRow;
   };
 
   const handleRowModesModelChange = ( rowModes: GridRowModesModel ) => {
@@ -169,27 +159,17 @@ export default function Products( props: ProductProps )
   const handleValueGet = ( params: GridValueGetterParams ) => {
     const { row, field } = params;
     return row.item[ field ];
-  };
+  }
 
   const handleValueSet = ( params: GridValueSetterParams, field: string ) => {
     const { row, value } = params;
     row.item[ field ] = value;
     return row;
-  };
-
-  const handleProcessRowUpdateError = ( error: any ) => {
-    alert( "Error Saving: " + error.toString() );
   }
 
-  // const group_names = Object.values( groups ).map( (i) => ( { 'value': i.id, 'label': i.name } ) );
-
-  const productColumns: GridColDef[] = [
+  const productGroupColumns: GridColDef[] = [
     { field: 'id', headerName: 'Id', width: 20 },
-    { field: 'groups', headerName: 'Groups', width: 100, editable: true },
     { field: 'name', headerName: 'Name', width: 200, editable: true, valueGetter: handleValueGet, valueSetter: (parms) => handleValueSet( parms, 'name' ) },
-    { field: 'cost', headerName: 'Cost', width: 100, type: 'number', editable: true, valueGetter: handleValueGet, valueSetter: (parms) => handleValueSet( parms, 'cost' ) },
-    { field: 'location', headerName: 'Location', width: 70, editable: true, valueGetter: handleValueGet, valueSetter: (parms) => handleValueSet( parms, 'location' ) },
-    { field: 'available', headerName: 'Available', width: 100, type: 'number', editable: true, valueGetter: handleValueGet, valueSetter: (parms) => handleValueSet( parms, 'available' ) },
     {
       field: 'actions',
       type: 'actions',
@@ -241,13 +221,12 @@ export default function Products( props: ProductProps )
     <div>
       <DataGrid
         rows={ rows }
-        columns={ productColumns }
+        columns={ productGroupColumns }
         editMode="row"
         rowModesModel={ rowModes }
         onRowModesModelChange={ handleRowModesModelChange }
         onRowEditStop={ handleRowEditStop }
         processRowUpdate={ processRowUpdate }
-        onProcessRowUpdateError={handleProcessRowUpdateError}
         rowSelection={ false }
         slots={{
           toolbar: EditToolbar,
