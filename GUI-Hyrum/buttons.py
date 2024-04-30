@@ -7,15 +7,18 @@ itemString = ''
 numberTurple = ('1','2','3','4','5','6','7','8','9','0')
 
 
+
 def makeItem(put):
     global itemString
     global numberTurple
 
-    if put in numberTurple and itemString in numberTurple or put not in numberTurple and itemString not in numberTurple:
+    if (put in numberTurple and itemString in numberTurple) or (put not in numberTurple and itemString not in numberTurple):
         # happens either if both are numbers or letters
         itemString = put
 
-    elif put in numberTurple and itemString not in numberTurple or put not in numberTurple and itemString in numberTurple:
+    elif (put in numberTurple and itemString not in numberTurple) or (put not in numberTurple and itemString in numberTurple):
+
+    
         # happens if both are different
         if put in numberTurple:
             itemString += put
@@ -28,65 +31,23 @@ def makeItem(put):
 
 def summonButtons():
 
-    btA = tk.Button(root, text = "A", bd = 2, command = lambda: makeItem('A'))
-    btB = tk.Button(root, text = "B", bd = 2, command = lambda: makeItem('B'))
-    btC = tk.Button(root, text = "C", bd = 2, command = lambda: makeItem('C'))
-    btD = tk.Button(root, text = "D", bd = 2, command = lambda: makeItem('D'))
-    btE = tk.Button(root, text = "E", bd = 2, command = lambda: makeItem('E'))
-    btF = tk.Button(root, text = "F", bd = 2, command = lambda: makeItem('F'))
-    bt1 = tk.Button(root, text = "1", bd = 2, command = lambda: makeItem('1'))
-    bt2 = tk.Button(root, text = "2", bd = 2, command = lambda: makeItem('2'))
-    bt3 = tk.Button(root, text = "3", bd = 2, command = lambda: makeItem('3'))
-    bt4 = tk.Button(root, text = "4", bd = 2, command = lambda: makeItem('4'))
-    bt5 = tk.Button(root, text = "5", bd = 2, command = lambda: makeItem('5'))
-    bt6 = tk.Button(root, text = "6", bd = 2, command = lambda: makeItem('6'))
-    bt7 = tk.Button(root, text = "7", bd = 2, command = lambda: makeItem('7'))
-    bt8 = tk.Button(root, text = "8", bd = 2, command = lambda: makeItem('8'))
-    bt9 = tk.Button(root, text = "9", bd = 2, command = lambda: makeItem('9'))
-    bt0 = tk.Button(root, text = "0", bd = 2, command = lambda: makeItem('0'))
+    buttons = []
+    buttonRef = (('A', '50', '50'), ('B', '100', '50'), ('C', '150', '50'), ('D', '200', '50'), ('E', '50', '100'), ('F', '100', '100'), ('1', '150', '100'), ('2', '200', '100'), ('3', '50', '150'), ('4', '100', '150'), ('5', '150', '150'), ('6', '200', '150'), ('7', '50', '200'), ('8', '100', '200'), ('9', '150', '200'), ('0', '200', '200'))
 
+    for i in buttonRef:
+        buttons.append((tk.Button(root, text = i[0], bd = 2, command = lambda: makeItem(i[0])), i[1], i[2]))
 
-    btA.pack()
-    btB.pack()
-    btC.pack()
-    btD.pack()
-    btE.pack()
-    btF.pack()
-    bt1.pack()
-    bt2.pack()
-    bt3.pack()
-    bt4.pack()
-    bt5.pack()
-    bt6.pack()
-    bt7.pack()
-    bt8.pack()
-    bt9.pack()
-    bt0.pack()
-
-
-    btA.place(x=50, y=50)
-    btB.place(x=100, y=50)
-    btC.place(x=150, y=50)
-    btD.place(x=200, y=50)
-    btE.place(x=50, y=100)
-    btF.place(x=100, y=100)
-    bt1.place(x=150, y=100)
-    bt2.place(x=200, y=100)
-    bt3.place(x=50, y=150)
-    bt4.place(x=100, y=150)
-    bt5.place(x=150, y=150)
-    bt6.place(x=200, y=150)
-    bt7.place(x=50, y=200)
-    bt8.place(x=100, y=200)
-    bt9.place(x=150, y=200)
-    bt0.place(x=200, y=200)
-
+    for i in buttons:
+        i[0].pack()
+        i[0].place(x=i[1], y=i[2])
 
 
 def scanSuccess():
     api.scan()
     customer = api.getCustomer()
-    print( customer)
+
+    print(customer)
+
 
     print('scan successful. Hello {0}, you have ${1} to spend'.format( customer['name'], customer['balance'] ) )
 
